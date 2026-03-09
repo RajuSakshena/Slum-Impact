@@ -3,19 +3,19 @@ const { Pool } = require("pg");
 const cors = require("cors");
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
 /* -------------------------------
-POSTGRES CONNECTION
+POSTGRES CONNECTION (NEON)
 -------------------------------- */
 
 const pool = new Pool({
-  user: "postgres",
-  host: "localhost",
-  database: "gis_dashboard",
-  password: "Mahadev@9212",
-  port: 5432,
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 /* -------------------------------
@@ -31,6 +31,7 @@ GET ALL SLUM BOUNDARIES
 -------------------------------- */
 
 app.get("/api/boundary", async (req, res) => {
+
   console.log("API called: /api/boundary");
 
   try {
@@ -116,9 +117,13 @@ app.get("/api/boundary", async (req, res) => {
   } catch (error) {
 
     console.error("DATABASE ERROR:", error);
-    res.status(500).send("Error fetching boundary");
+
+    res.status(500).json({
+      error: "Error fetching boundary"
+    });
 
   }
+
 });
 
 /* -------------------------------
@@ -147,7 +152,10 @@ app.post("/api/update-boundary", async (req, res) => {
   } catch (error) {
 
     console.error("UPDATE ERROR:", error);
-    res.status(500).send("Update failed");
+
+    res.status(500).json({
+      error: "Update failed"
+    });
 
   }
 
@@ -157,8 +165,8 @@ app.post("/api/update-boundary", async (req, res) => {
 SERVER START
 -------------------------------- */
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
